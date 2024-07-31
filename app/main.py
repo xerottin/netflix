@@ -1,14 +1,16 @@
-from http.client import HTTPException
-
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
-from app.database import SessionLocal
-from app.models import Movie, Genre, Actor
-from app.schemas import MovieResponse, MovieCreate
+from typing import List
+
+from app import models, schemas, crud
+from app.database import SessionLocal, engine
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
 
+# Dependency to get the DB session
 def get_db():
     db = SessionLocal()
     try:
@@ -17,32 +19,56 @@ def get_db():
         db.close()
 
 
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
+@app.post("/movies/", response_model=schemas.Movie)
+def create_movie(movie: schemas.MovieCreate, db: Session = Depends(get_db)):
+    return crud.create_movie(db=db, movie=movie)
 
 
-@app.post("/movies/", response_model=MovieResponse)
-def create_movie(movie: MovieCreate, db: Session = Depends(get_db)):
-    genre_objects = [db.query(Genre).filter(Genre.name == genre).first() for genre in movie.genres]
-    actor_objects = [db.query(Actor).filter(Actor.name == actor).first() for actor in movie.actors]
+@app.get("/movies/", response_model=List[schemas.Movie])
+def read_movies(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    return crud.get_movies(db, skip=skip, limit=limit)
 
-    if any(g is None for g in genre_objects):
-        raise HTTPException(status_code=400, detail="Some genres not found")
-    if any(a is None for a in actor_objects):
-        raise HTTPException(status_code=400, detail="Some actors not found")
 
-    db_movie = Movie(
-        title=movie.title,
-        description=movie.description,
-        author=movie.author,
-        year=movie.year,
-        genres=genre_objects,
-        actors=actor_objects
-    )
-
-    db.add(db_movie)
-    db.commit()
-    db.refresh(db_movie)
-
+@app.get("/movies/{movie_id}", response_model=schemas.Movie)
+def read_movie(movie_id: int, db: Session = Depends(get_db)):
+    db_movie = crud.get_movie(db, movie_id=movie_id)
+    if db_movie is None:
+        raise HTTPException(status_code=404, detail="Movie not found")
     return db_movie
+
+
+# Actor routes
+@app.post("/actors/", response_model=schemas.Actor)
+def create_actor(actor: schemas.ActorCreate, db: Session = Depends(get_db)):
+    return crud.create_actor(db=db, actor=actor)
+
+
+@app.get("/actors/", response_model=List[schemas.Actor])
+def read_actors(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    return crud.get_actors(db, skip=skip, limit=limit)
+
+
+@app.get("/actors/{actor_id}", response_model=schemas.Actor)
+def read_actor(actor_id: int, db: Session = Depends(get_db)):
+    db_actor = crud.get_actor(db, actor_id=actor_id)
+    if db_actor is None:
+        raise HTTPException(status_code=404, detail="Actor not found")
+    return db_actor
+
+
+@app.post("/genres/", response_model=schemas.Genre)
+def create_genre(genre: schemas.GenreCreate, db: Session = Depends(get_db)):
+    return crud.create_genre(db=db, genre=genre)
+
+
+@app.get("/genres/", response_model=List[schemas.Genre])
+def read_genres(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    return crud.get_genres(db, skip=skip, limit=limit)
+
+
+@app.get("/genres/{genre_id}", response_model=schemas.Genre)
+def read_genre(genre_id: int, db: Session = Depends(get_db)):
+    db_genre = crud.get_genre(db, genre_id=genre_id)
+    if db_genre is None:
+        raise HTTPException(status_code=404, detail="Genre not found")
+    return db_genre

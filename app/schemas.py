@@ -1,45 +1,54 @@
 from pydantic import BaseModel
-
-from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 
 
-class MovieCreate(BaseModel):
-    title: str
-    description: str
-    author: str
-    year: str
-    genres: List[str]
-    actors: List[str]
+class GenreBase(BaseModel):
+    name: str
 
 
-class MovieResponse(BaseModel):
-    title: str
-    description: str
-    author: str
-    year: str
-    genres: List[str]
-    actors: List[str]
+class GenreCreate(GenreBase):
+    pass
+
+
+class Genre(GenreBase):
+    genre_id: Optional[int]
 
     class Config:
-        form_attribute = True
+        orm_mode = True
 
 
-class Genre(BaseModel):
-    genre_id: int
+class ActorBase(BaseModel):
     name: str
+    gender: Optional[str]
 
 
-class GenreCreate(BaseModel):
-    name: str
+class ActorCreate(ActorBase):
+    pass
 
 
-class Actor(BaseModel):
-    actor_id: int
-    name: str
-    gender: str
+class Actor(ActorBase):
+    actor_id: Optional[int]
+
+    class Config:
+        orm_mode = True
 
 
-class ActorCreate(BaseModel):
-    name: str
-    gender: str
+class MovieBase(BaseModel):
+    title: str
+    description: Optional[str]
+    author: Optional[str]
+    year: Optional[str]
+
+
+class MovieCreate(MovieBase):
+    genres: List[GenreCreate] = []
+    actors: List[ActorCreate] = []
+
+
+class Movie(MovieBase):
+    movie_id: Optional[int]
+    genres: List[Genre] = []
+    actors: List[Actor] = []
+
+    class Config:
+        orm_mode = True

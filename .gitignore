@@ -9,14 +9,15 @@ dump.rdb
 
 # Ignore Python cache files
 __pycache__/
+*__pycache__/
 *.py[cod]
 *.egg
+.env
 *.egg-info/
 dist/
 build/
 
 # Ignore environment files
-.env
 *.env
 
 # Ignore log files and temporary files
@@ -26,7 +27,6 @@ build/
 
 # Ignore IDE files
 .idea/
-.vscode/
 
 # Ignore Docker files
 docker-compose.override.yml
@@ -36,3 +36,4 @@ Dockerfile.prod
 # Ignore OS-specific files
 .DS_Store
 Thumbs.db
+netflix
