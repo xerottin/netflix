@@ -1,5 +1,6 @@
-from pydantic import BaseModel
+# schemas.py
 from typing import List, Optional
+from pydantic import BaseModel
 
 
 class GenreBase(BaseModel):
@@ -10,16 +11,51 @@ class GenreCreate(GenreBase):
     pass
 
 
-class Genre(GenreBase):
-    genre_id: Optional[int]
+class GenreInMovie(GenreBase):
+    genre_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+
+class MovieBase(BaseModel):
+    title: str
+    description: Optional[str] = None
+    author: Optional[str] = None
+    year: Optional[str] = None
+
+
+class MovieCreate(MovieBase):
+    genres: Optional[List[int]] = None
+    actors: Optional[List[int]] = None
+
+
+class MovieInGenre(MovieBase):
+    movie_id: int
+
+    class Config:
+        from_attributes = True
+
+
+class Movie(MovieBase):
+    movie_id: int
+    genres: List[GenreInMovie] = []
+    actors: List['Actor'] = []
+
+    class Config:
+        from_attributes = True
+
+
+class Genre(GenreBase):
+    genre_id: int
+    movies: List[MovieInGenre] = []
+    class Config:
+        from_attributes = True
 
 
 class ActorBase(BaseModel):
     name: str
-    gender: Optional[str]
+    gender: Optional[str] = None
 
 
 class ActorCreate(ActorBase):
@@ -27,28 +63,7 @@ class ActorCreate(ActorBase):
 
 
 class Actor(ActorBase):
-    actor_id: Optional[int]
+    actor_id: int
 
     class Config:
-        orm_mode = True
-
-
-class MovieBase(BaseModel):
-    title: str
-    description: Optional[str]
-    author: Optional[str]
-    year: Optional[str]
-
-
-class MovieCreate(MovieBase):
-    genres: List[GenreCreate] = []
-    actors: List[ActorCreate] = []
-
-
-class Movie(MovieBase):
-    movie_id: Optional[int]
-    genres: List[Genre] = []
-    actors: List[Actor] = []
-
-    class Config:
-        orm_mode = True
+        from_attributes = True

@@ -1,8 +1,8 @@
+# crud.py
 from sqlalchemy.orm import Session
 from app import models, schemas
 
 
-# Genre CRUD functions
 def get_genre(db: Session, genre_id: int):
     return db.query(models.Genre).filter(models.Genre.genre_id == genre_id).first()
 
@@ -19,7 +19,6 @@ def create_genre(db: Session, genre: schemas.GenreCreate):
     return db_genre
 
 
-# Movie CRUD functions
 def get_movie(db: Session, movie_id: int):
     return db.query(models.Movie).filter(models.Movie.movie_id == movie_id).first()
 
@@ -35,13 +34,16 @@ def create_movie(db: Session, movie: schemas.MovieCreate):
         author=movie.author,
         year=movie.year
     )
+    if movie.genres:
+        db_movie.genres = db.query(models.Genre).filter(models.Genre.genre_id.in_(movie.genres)).all()
+    if movie.actors:
+        db_movie.actors = db.query(models.Actor).filter(models.Actor.actor_id.in_(movie.actors)).all()
     db.add(db_movie)
     db.commit()
     db.refresh(db_movie)
     return db_movie
 
 
-# Actor CRUD functions
 def get_actor(db: Session, actor_id: int):
     return db.query(models.Actor).filter(models.Actor.actor_id == actor_id).first()
 

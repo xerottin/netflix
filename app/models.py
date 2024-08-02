@@ -1,9 +1,8 @@
+# models.py
 from sqlalchemy import Table, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from app.database import engine, Base
 
-
-# Association tables for many-to-many relationships
 movie_genres = Table(
     'movie_genres', Base.metadata,
     Column('movie_id', Integer, ForeignKey('movies.movie_id'), primary_key=True),
@@ -17,7 +16,6 @@ movie_actors = Table(
 )
 
 
-# Movie model
 class Movie(Base):
     __tablename__ = 'movies'
     movie_id = Column(Integer, primary_key=True, autoincrement=True)
@@ -25,29 +23,23 @@ class Movie(Base):
     description = Column(String, index=True)
     author = Column(String, index=True)
     year = Column(String, index=True)
-
     genres = relationship("Genre", secondary=movie_genres, back_populates="movies")
     actors = relationship("Actor", secondary=movie_actors, back_populates="movies")
 
 
-# Genre model
 class Genre(Base):
     __tablename__ = 'genres'
     genre_id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, index=True)
-
     movies = relationship("Movie", secondary=movie_genres, back_populates="genres")
 
 
-# Actor model
 class Actor(Base):
     __tablename__ = 'actors'
     actor_id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String, index=True)
     gender = Column(String, index=True)
-
     movies = relationship("Movie", secondary=movie_actors, back_populates="actors")
 
 
-# Create all tables
 Base.metadata.create_all(bind=engine)
