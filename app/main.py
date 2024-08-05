@@ -10,10 +10,11 @@ from app.crud import create_movie, get_movies, get_movie, create_actor, get_acto
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-#auth
+# auth
 app.include_router(auth.router)
 
-#auth-end
+
+# auth-end
 
 def get_db():
     db = SessionLocal()
@@ -41,8 +42,6 @@ def read_movie(movie_id: int, db: Session = Depends(get_db)):
     return db_movie
 
 
-
-
 @app.post("/actors/", response_model=schemas.Actor)
 def create_actor_endpoint(actor: schemas.ActorCreate, db: Session = Depends(get_db)):
     return create_actor(db=db, actor=actor)
@@ -59,8 +58,6 @@ def read_actor(actor_id: int, db: Session = Depends(get_db)):
     if db_actor is None:
         raise HTTPException(status_code=404, detail="Actor not found")
     return db_actor
-
-
 
 
 @app.post("/genres/", response_model=schemas.Genre)
