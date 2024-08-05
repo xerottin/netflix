@@ -68,3 +68,14 @@ class Actor(ActorBase):
 
     class Config:
         from_attributes = True
+
+
+class Comment(BaseModel):
+    comment_id: int
+    movie_id: int
+    user_username: str
+    comment: str
+
+
+class CommentCreate(Comment):
+    comment: str

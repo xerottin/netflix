@@ -1,8 +1,8 @@
-# models.py
 from sqlalchemy import Table, Column, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 from app.database import engine, Base
 
+# Промежуточные таблицы для связи многие-ко-многим
 movie_genres = Table(
     'movie_genres', Base.metadata,
     Column('movie_id', Integer, ForeignKey('movies.movie_id'), primary_key=True),
@@ -42,12 +42,22 @@ class Actor(Base):
     movies = relationship("Movie", secondary=movie_actors, back_populates="actors")
 
 
-# user
-class Users(Base):
+class User(Base):
     __tablename__ = 'users'
-    user_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(Integer, primary_key=True, index=True, autoincrement=True, unique=True)
     username = Column(String, index=True, unique=True)
     hashed_password = Column(String)
+
+
+class Comment(Base):
+    __tablename__ = 'comments'
+    comment_id = Column(Integer, primary_key=True, index=True)
+    movie_id = Column(Integer, ForeignKey('movies.movie_id'))
+    user_username = Column(String, ForeignKey('users.username'))
+    content = Column(String)
+
+    movie = relationship(Movie, back_populates="comments")
+    user = relationship(User, back_populates="comments")
 
 
 Base.metadata.create_all(bind=engine)

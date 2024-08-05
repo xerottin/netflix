@@ -4,7 +4,7 @@ from app import models, schemas
 
 
 def get_genre(db: Session, genre_id: int):
-    return db.query(models.Genre).filter(models.Genre.genre_id == genre_id).first()
+    return db.query(models.Genre).filter(genre_id == models.Genre.genre_id).first()
 
 
 def get_genres(db: Session, skip: int = 0, limit: int = 10):
@@ -20,7 +20,7 @@ def create_genre(db: Session, genre: schemas.GenreCreate):
 
 
 def get_movie(db: Session, movie_id: int):
-    return db.query(models.Movie).filter(models.Movie.movie_id == movie_id).first()
+    return db.query(models.Movie).filter(movie_id == models.Movie.movie_id).first()
 
 
 def get_movies(db: Session, skip: int = 0, limit: int = 10):
@@ -45,7 +45,7 @@ def create_movie(db: Session, movie: schemas.MovieCreate):
 
 
 def get_actor(db: Session, actor_id: int):
-    return db.query(models.Actor).filter(models.Actor.actor_id == actor_id).first()
+    return db.query(models.Actor).filter(actor_id == models.Actor.actor_id).first()
 
 
 def get_actors(db: Session, skip: int = 0, limit: int = 10):
@@ -61,3 +61,7 @@ def create_actor(db: Session, actor: schemas.ActorCreate):
     db.commit()
     db.refresh(db_actor)
     return db_actor
+
+
+
+

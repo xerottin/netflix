@@ -10,7 +10,7 @@ from starlette import status
 from sqlalchemy.orm import Session
 import jwt
 from app.database import SessionLocal
-from app.models import Users
+from app.models import User
 
 router = APIRouter(
     prefix="/auth",
@@ -53,7 +53,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 async def create_user(db: db_dependency,
                       create_user_request: CreateUserRequest):
     try:
-        create_user_model = Users(
+        create_user_model = User(
             username=create_user_request.username,
             hashed_password=bcrypt_context.hash(create_user_request.password),
         )
@@ -61,7 +61,7 @@ async def create_user(db: db_dependency,
         db.add(create_user_model)
         db.commit()
         db.refresh(create_user_model)
-        return User(id=create_user_model.user_id, username=create_user_model.username)
+        return User(username=create_user_model.username)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
@@ -78,8 +78,8 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
     return {"access_token": token, "token_type": "bearer"}
 
 
-def authenticate_user(username: str, password: str, db: Session) -> Union[Users, None]:
-    user = db.query(Users).filter(Users.username == username).first()
+def authenticate_user(username: str, password: str, db: Session) -> Union[User, None]:
+    user = db.query(User).filter(username == User.username).first()
 
     if user and bcrypt_context.verify(password, user.hashed_password):
         return user
