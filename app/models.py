@@ -42,4 +42,12 @@ class Actor(Base):
     movies = relationship("Movie", secondary=movie_actors, back_populates="actors")
 
 
+# user
+class Users(Base):
+    __tablename__ = 'users'
+    user_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    username = Column(String, index=True, unique=True)
+    hashed_password = Column(String)
+
+
 Base.metadata.create_all(bind=engine)

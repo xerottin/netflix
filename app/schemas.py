@@ -49,6 +49,7 @@ class Movie(MovieBase):
 class Genre(GenreBase):
     genre_id: int
     movies: List[MovieInGenre] = []
+
     class Config:
         from_attributes = True
 
