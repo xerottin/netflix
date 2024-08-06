@@ -1,10 +1,11 @@
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
 from typing import List
 from app import models, schemas, auth, router
 from app.database import engine, get_db
 from app.crud import create_movie, get_movies, get_movie, create_actor, get_actors, get_actor, create_genre, get_genres, \
     get_genre
+
 
 models.Base.metadata.create_all(bind=engine)
 

@@ -21,7 +21,7 @@ class MovieBase(BaseModel):
     title: str
     description: Optional[str] = None
     author: Optional[str] = None
-    year: Optional[str] = None
+    year: int
 
 
 class MovieCreate(MovieBase):
@@ -40,6 +40,7 @@ class Movie(MovieBase):
     movie_id: int
     genres: List[GenreInMovie] = []
     actors: List['Actor'] = []
+    year: int
 
     class Config:
         from_attributes = True
@@ -69,6 +70,11 @@ class Actor(ActorBase):
         from_attributes = True
 
 
+# schemas.py
+
+from pydantic import BaseModel
+
+
 class CommentBase(BaseModel):
     content: str
 
@@ -78,9 +84,9 @@ class CommentCreate(CommentBase):
 
 
 class Comment(CommentBase):
-    id: int
+    comment_id: int
     movie_id: int
     user_id: int
 
     class Config:
-        from_attributes = True
+        orm_mode = True
