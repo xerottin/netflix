@@ -1,8 +1,8 @@
-"""Add autoincrement to user_id
+"""data1.0
 
-Revision ID: 3c3bee8c5abc
-Revises: df1f985d4540
-Create Date: 2024-08-05 11:06:33.110208
+Revision ID: dd4aefec3998
+Revises: a743a7228b58
+Create Date: 2024-08-06 17:25:07.302171
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '3c3bee8c5abc'
-down_revision = 'df1f985d4540'
+revision = 'dd4aefec3998'
+down_revision = 'a743a7228b58'
 branch_labels = None
 depends_on = None
 

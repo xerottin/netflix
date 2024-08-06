@@ -1,4 +1,3 @@
-# schemas.py
 from typing import List, Optional
 from pydantic import BaseModel
 
@@ -15,7 +14,7 @@ class GenreInMovie(GenreBase):
     genre_id: int
 
     class Config:
-        from_attributes = True
+        from_attributes = True  # Используйте orm_mode вместо from_attributes для pydantic моделей
 
 
 class MovieBase(BaseModel):
@@ -70,12 +69,18 @@ class Actor(ActorBase):
         from_attributes = True
 
 
-class Comment(BaseModel):
-    comment_id: int
+class CommentBase(BaseModel):
+    content: str
+
+
+class CommentCreate(CommentBase):
+    pass
+
+
+class Comment(CommentBase):
+    id: int
     movie_id: int
-    user_username: str
-    comment: str
+    user_id: int
 
-
-class CommentCreate(Comment):
-    comment: str
+    class Config:
+        from_attributes = True

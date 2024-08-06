@@ -1,30 +1,27 @@
 from fastapi import APIRouter, HTTPException, Depends
-from datetime import datetime
-from uuid import uuid4
-
 from sqlalchemy.orm import Session
-
-from app.auth import get_db, User
-from app.main import get_current_user
-from app.main import get_movie_by_id
-from app.schemas import Comment
+from app.database import get_db
+from app.dependencies import get_current_user
+from app.models import User, Movie, Comment
+from app.schemas import CommentCreate, Comment
 
 router = APIRouter()
 
-
-@router.post("/movies/{movie_id}/comments")
-def add_comment(movie_id: str, comment: Comment,  user: User = Depends(get_current_user),
-                db: Session = Depends(get_db)):
-    movie = get_movie_by_id
+@router.post("/movies/{movie_id}/comments", response_model=Comment)
+def add_comment(
+        movie_id: int,
+        comment: CommentCreate,
+        user: User = Depends(get_current_user),
+        db: Session = Depends(get_db)
+):
+    movie = db.query(Movie).filter(Movie.movie_id == movie_id).first()
     if not movie:
         raise HTTPException(status_code=404, detail="Movie not found")
 
     new_comment = Comment(
-        id=int(uuid4()),
         movie_id=movie_id,
-        user_id=user.id,
-        content=comment.content,
-        created_at=datetime.utcnow()
+        user_id=user.user_id,
+        content=comment.content
     )
 
     db.add(new_comment)
