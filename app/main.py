@@ -4,8 +4,10 @@ from typing import List
 from app import models, schemas, auth, router
 from app.database import engine, get_db
 from app.crud import create_movie, get_movies, get_movie, create_actor, get_actors, get_actor, create_genre, get_genres, \
-    get_genre
-
+    get_genre, create_rating, get_movie_average_rating
+from app.dependencies import get_current_user
+from app.models import User, Movie
+from app.schemas import RatingResponse, RatingCreate, MovieResponse
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -70,3 +72,27 @@ def read_genre(genre_id: int, db: Session = Depends(get_db)):
     if db_genre is None:
         raise HTTPException(status_code=404, detail="Genre not found")
     return db_genre
+
+
+@app.post("/ratings/", response_model=RatingResponse)
+def create_movie_rating(
+        rating: RatingCreate,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    db_movie = db.query(Movie).filter(rating.movie_id == Movie.movie_id).first()
+    if not db_movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+
+    db_rating = create_rating(db, rating, current_user.user_id)
+    return db_rating
+
+
+@app.get("/movies/{movie_id}", response_model=MovieResponse)
+def read_movie(movie_id: int, db: Session = Depends(get_db)):
+    db_movie = db.query(Movie).filter(movie_id == Movie.movie_id).first()
+    if not db_movie:
+        raise HTTPException(status_code=404, detail="Movie not found")
+
+    average_rating = get_movie_average_rating(db, movie_id)
+    return MovieResponse(id=db_movie.movie_id, title=db_movie.title, average_rating=average_rating)

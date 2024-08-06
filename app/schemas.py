@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class GenreBase(BaseModel):
@@ -87,6 +87,32 @@ class Comment(CommentBase):
     comment_id: int
     movie_id: int
     user_id: int
+
+    class Config:
+        orm_mode = True
+
+
+class RatingBase(BaseModel):
+    rating: int = Field(..., ge=1, le=10)
+    movie_id: int
+
+
+class RatingCreate(RatingBase):
+    pass
+
+
+class RatingResponse(RatingBase):
+    rating_id: int
+    user_id: int
+
+    class Config:
+        orm_mode = True
+
+
+class MovieResponse(BaseModel):
+    id: int
+    title: str
+    average_rating: float
 
     class Config:
         orm_mode = True

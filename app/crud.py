@@ -1,6 +1,9 @@
 # crud.py
 from sqlalchemy.orm import Session
+
 from app import models, schemas
+from app.models import Rating
+from app.schemas import RatingCreate
 
 
 def get_genre(db: Session, genre_id: int):
@@ -55,7 +58,6 @@ def get_actors(db: Session, skip: int = 0, limit: int = 10):
 def create_actor(db: Session, actor: schemas.ActorCreate):
     db_actor = models.Actor(
         name=actor.name,
-        gender=actor.gender
     )
     db.add(db_actor)
     db.commit()
@@ -63,5 +65,17 @@ def create_actor(db: Session, actor: schemas.ActorCreate):
     return db_actor
 
 
+def create_rating(db: Session, rating: RatingCreate, user_id: int):
+    db_rating = Rating(**rating.model_dump(), user_id=user_id)
+    db.add(db_rating)
+    db.commit()
+    db.refresh(db_rating)
+    return db_rating
 
 
+def get_movie_average_rating(db: Session, movie_id: int):
+    ratings = db.query(Rating).filter(movie_id == Rating.movie_id).all()
+    if not ratings:
+        return None
+    total = sum(r.rating for r in ratings)
+    return total / len(ratings)

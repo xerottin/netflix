@@ -23,6 +23,7 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     comments = relationship("Comment", back_populates="user")
+    ratings = relationship("Rating", back_populates="user")  # Добавлено
 
 
 class Genre(Base):
@@ -31,6 +32,7 @@ class Genre(Base):
     genre_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String, index=True)
     movies = relationship("Movie", secondary=movie_genres, back_populates="genres")
+    # Удалено relationship("Rating")
 
 
 class Movie(Base):
@@ -44,6 +46,7 @@ class Movie(Base):
     genres = relationship("Genre", secondary=movie_genres, back_populates="movies")
     actors = relationship("Actor", secondary=movie_actors, back_populates="movies")
     comments = relationship("Comment", back_populates="movie")
+    ratings = relationship("Rating", back_populates="movie")  # Добавлено
 
 
 class Actor(Base):
@@ -67,3 +70,12 @@ class Comment(Base):
     movie = relationship("Movie", back_populates="comments")
     user = relationship("User", back_populates="comments")
 
+
+class Rating(Base):
+    __tablename__ = 'ratings'
+    rating_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    rating = Column(Integer)
+    user_id = Column(Integer, ForeignKey('users.user_id'))
+    movie_id = Column(Integer, ForeignKey('movies.movie_id'))
+    user = relationship("User", back_populates="ratings")
+    movie = relationship("Movie", back_populates="ratings")
