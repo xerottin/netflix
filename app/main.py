@@ -30,12 +30,21 @@ def read_movies(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     return get_movies(db, skip=skip, limit=limit)
 
 
-@app.get("/movies/{movie_id}", response_model=schemas.Movie)
+@app.get("/movies/{movie_id}", response_model=schemas.MovieResponse)
 def read_movie(movie_id: int, db: Session = Depends(get_db)):
     db_movie = get_movie(db, movie_id=movie_id)
     if db_movie is None:
         raise HTTPException(status_code=404, detail="Movie not found")
-    return db_movie
+
+    average_rating = get_movie_average_rating(db, movie_id)
+    return schemas.MovieResponse(
+        movie_id=db_movie.movie_id,
+        title=db_movie.title,
+        description=db_movie.description,
+        author=db_movie.author,
+        year=db_movie.year,
+        average_rating=average_rating
+    )
 
 
 @app.post("/actors/", response_model=schemas.Actor)

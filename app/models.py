@@ -32,7 +32,6 @@ class Genre(Base):
     genre_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String, index=True)
     movies = relationship("Movie", secondary=movie_genres, back_populates="genres")
-    # Удалено relationship("Rating")
 
 
 class Movie(Base):

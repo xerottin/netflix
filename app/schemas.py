@@ -14,7 +14,7 @@ class GenreInMovie(GenreBase):
     genre_id: int
 
     class Config:
-        from_attributes = True  # Используйте orm_mode вместо from_attributes для pydantic моделей
+        orm_mode = True
 
 
 class MovieBase(BaseModel):
@@ -33,7 +33,7 @@ class MovieInGenre(MovieBase):
     movie_id: int
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class Movie(MovieBase):
@@ -43,7 +43,7 @@ class Movie(MovieBase):
     year: int
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class Genre(GenreBase):
@@ -51,7 +51,7 @@ class Genre(GenreBase):
     movies: List[MovieInGenre] = []
 
     class Config:
-        from_attributes = True
+        orm_mode = True
 
 
 class ActorBase(BaseModel):
@@ -67,12 +67,7 @@ class Actor(ActorBase):
     actor_id: int
 
     class Config:
-        from_attributes = True
-
-
-# schemas.py
-
-from pydantic import BaseModel
+        orm_mode = True
 
 
 class CommentBase(BaseModel):
@@ -110,9 +105,12 @@ class RatingResponse(RatingBase):
 
 
 class MovieResponse(BaseModel):
-    id: int
+    movie_id: int
     title: str
-    average_rating: float
+    description: Optional[str] = None
+    author: Optional[str] = None
+    year: int
+    average_rating: Optional[float] = None
 
     class Config:
         orm_mode = True
