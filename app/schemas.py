@@ -14,7 +14,7 @@ class GenreInMovie(GenreBase):
     genre_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class MovieBase(BaseModel):
@@ -33,7 +33,7 @@ class MovieInGenre(MovieBase):
     movie_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class Movie(MovieBase):
@@ -43,7 +43,19 @@ class Movie(MovieBase):
     year: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+
+class MovieResponse(BaseModel):
+    movie_id: int
+    title: str
+    description: Optional[str] = None
+    author: Optional[str] = None
+    year: int
+    average_rating: Optional[float] = None
+
+    class Config:
+        from_attributes = True
 
 
 class Genre(GenreBase):
@@ -51,7 +63,7 @@ class Genre(GenreBase):
     movies: List[MovieInGenre] = []
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class ActorBase(BaseModel):
@@ -67,7 +79,7 @@ class Actor(ActorBase):
     actor_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class CommentBase(BaseModel):
@@ -84,7 +96,7 @@ class Comment(CommentBase):
     user_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class RatingBase(BaseModel):
@@ -101,16 +113,18 @@ class RatingResponse(RatingBase):
     user_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
-class MovieResponse(BaseModel):
+class WatchListBase(BaseModel):
+    user_id: int
     movie_id: int
-    title: str
-    description: Optional[str] = None
-    author: Optional[str] = None
-    year: int
-    average_rating: Optional[float] = None
 
+
+class WatchListCreate(WatchListBase):
+    pass
+
+
+class WatchListResponse(WatchListBase):
     class Config:
-        orm_mode = True
+        from_attributes = True

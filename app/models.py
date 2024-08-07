@@ -15,6 +15,12 @@ movie_actors = Table(
     Column('actor_id', Integer, ForeignKey('actors.actor_id'), primary_key=True)
 )
 
+watch_list = Table(
+    'watch_list', Base.metadata,
+    Column('user_id', Integer, ForeignKey('users.user_id'), primary_key=True),
+    Column('movie_id', Integer, ForeignKey('movies.movie_id'), primary_key=True)
+)
+
 
 class User(Base):
     __tablename__ = "users"
@@ -24,6 +30,7 @@ class User(Base):
     hashed_password = Column(String)
     comments = relationship("Comment", back_populates="user")
     ratings = relationship("Rating", back_populates="user")  # Добавлено
+    watch_list = relationship("Movie", secondary=watch_list, back_populates="watchers")
 
 
 class Genre(Base):
@@ -46,6 +53,7 @@ class Movie(Base):
     actors = relationship("Actor", secondary=movie_actors, back_populates="movies")
     comments = relationship("Comment", back_populates="movie")
     ratings = relationship("Rating", back_populates="movie")  # Добавлено
+    watchers = relationship("User", secondary=watch_list, back_populates="watch_list")
 
 
 class Actor(Base):

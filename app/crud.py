@@ -79,3 +79,17 @@ def get_movie_average_rating(db: Session, movie_id: int):
         return None
     total = sum(r.rating for r in ratings)
     return total / len(ratings)
+
+
+def add_to_watchlist(db: Session, watchlist: schemas.WatchListCreate):
+    db_user = db.query(models.User).filter(watchlist.user_id == models.User.user_id).first()
+    db_movie = db.query(models.Movie).filter(watchlist.movie_id == models.Movie.movie_id).first()
+
+    if not db_user or not db_movie:
+        return None
+
+    db_user.watch_list.append(db_movie)
+    db.commit()
+    db.refresh(db_user)
+
+    return db_user
