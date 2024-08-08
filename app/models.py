@@ -1,89 +1,99 @@
-#models.py
-from sqlalchemy import Column, Integer, String, ForeignKey, Table
-from sqlalchemy.orm import relationship
-from app.database import Base
-
-# Промежуточные таблицы для связи многие-ко-многим
-movie_genres = Table(
-    'movie_genres', Base.metadata,
-    Column('movie_id', Integer, ForeignKey('movies.movie_id'), primary_key=True),
-    Column('genre_id', Integer, ForeignKey('genres.genre_id'), primary_key=True)
-)
-
-movie_actors = Table(
-    'movie_actors', Base.metadata,
-    Column('movie_id', Integer, ForeignKey('movies.movie_id'), primary_key=True),
-    Column('actor_id', Integer, ForeignKey('actors.actor_id'), primary_key=True)
-)
-
-watch_list = Table(
-    'watch_list', Base.metadata,
-    Column('user_id', Integer, ForeignKey('users.user_id'), primary_key=True),
-    Column('movie_id', Integer, ForeignKey('movies.movie_id'), primary_key=True)
-)
+from pydantic import BaseModel, Field
+from bson import ObjectId
+from typing import List, Optional
 
 
-class User(Base):
-    __tablename__ = "users"
+class PyObjectId(ObjectId):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
 
-    user_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    username = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
-    comments = relationship("Comment", back_populates="user")
-    ratings = relationship("Rating", back_populates="user")  # Добавлено
-    watch_list = relationship("Movie", secondary=watch_list, back_populates="watchers")
+    @classmethod
+    def validate(cls, v):
+        if not ObjectId.is_valid(v):
+            raise ValueError('Invalid ObjectId')
+        return ObjectId(v)
 
-
-class Genre(Base):
-    __tablename__ = "genres"
-
-    genre_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    name = Column(String, index=True)
-    movies = relationship("Movie", secondary=movie_genres, back_populates="genres")
+    @classmethod
+    def __modify_schema__(cls, field_schema):
+        field_schema.update(type='string')
 
 
-class Movie(Base):
-    __tablename__ = "movies"
+class User(BaseModel):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    username: str
+    hashed_password: str
+    comments: List[str] = []
+    ratings: List[str] = []
+    watch_list: List[str] = []
 
-    movie_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    title = Column(String, index=True)
-    description = Column(String)
-    author = Column(String)
-    year = Column(Integer)
-    genres = relationship("Genre", secondary=movie_genres, back_populates="movies")
-    actors = relationship("Actor", secondary=movie_actors, back_populates="movies")
-    comments = relationship("Comment", back_populates="movie")
-    ratings = relationship("Rating", back_populates="movie")  # Добавлено
-    watchers = relationship("User", secondary=watch_list, back_populates="watch_list")
-
-
-class Actor(Base):
-    __tablename__ = "actors"
-
-    actor_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    name = Column(String, index=True)
-    birth_year = Column(Integer)
-    country = Column(String)
-    movies = relationship("Movie", secondary=movie_actors, back_populates="actors")
+    class Config:
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
 
 
-class Comment(Base):
-    __tablename__ = "comments"
+class Genre(BaseModel):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    name: str
+    movies: List[str] = []
 
-    comment_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    movie_id = Column(Integer, ForeignKey("movies.movie_id"), nullable=False)
-    user_id = Column(Integer, ForeignKey("users.user_id"), nullable=False)
-    content = Column(String, nullable=False)
-
-    movie = relationship("Movie", back_populates="comments")
-    user = relationship("User", back_populates="comments")
+    class Config:
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
 
 
-class Rating(Base):
-    __tablename__ = 'ratings'
-    rating_id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    rating = Column(Integer)
-    user_id = Column(Integer, ForeignKey('users.user_id'))
-    movie_id = Column(Integer, ForeignKey('movies.movie_id'))
-    user = relationship("User", back_populates="ratings")
-    movie = relationship("Movie", back_populates="ratings")
+class Movie(BaseModel):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    title: str
+    description: Optional[str]
+    author: Optional[str]
+    year: int
+    genres: List[str] = []
+    actors: List[str] = []
+    comments: List[str] = []
+    ratings: List[str] = []
+    watchers: List[str] = []
+
+    class Config:
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
+
+
+class Actor(BaseModel):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    name: str
+    birth_year: Optional[int]
+    country: Optional[str]
+    movies: List[str] = []
+
+    class Config:
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
+
+
+class Comment(BaseModel):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    movie_id: str
+    user_id: str
+    content: str
+
+    class Config:
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
+
+
+class Rating(BaseModel):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    rating: int
+    user_id: str
+    movie_id: str
+
+    class Config:
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}

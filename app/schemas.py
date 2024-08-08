@@ -1,132 +1,40 @@
-#schemas.py
-
-from typing import List, Optional
 from pydantic import BaseModel, Field
+from bson import ObjectId
+from typing import List, Optional
 
 
-class GenreBase(BaseModel):
-    name: str
+class PyObjectId(ObjectId):
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, v):
+        if not ObjectId.is_valid(v):
+            raise ValueError('Invalid ObjectId')
+        return ObjectId(v)
+
+    @classmethod
+    def __modify_schema__(cls, field_schema):
+        field_schema.update(type='string')
 
 
-class GenreCreate(GenreBase):
-    pass
+class UserCreate(BaseModel):
+    username: str
+    password: str
 
 
-class GenreInMovie(GenreBase):
-    genre_id: int
-
-    class Config:
-        from_attributes = True
-
-
-class MovieBase(BaseModel):
-    title: str
-    description: Optional[str] = None
-    author: Optional[str] = None
-    year: int
-
-
-class MovieCreate(MovieBase):
-    genres: Optional[List[int]] = None
-    actors: Optional[List[int]] = None
-
-
-class MovieInGenre(MovieBase):
-    movie_id: int
-
-    class Config:
-        from_attributes = True
-
-
-class Movie(MovieBase):
-    movie_id: int
-    genres: List[GenreInMovie] = []
-    actors: List['Actor'] = []
-    year: int
+class UserOut(BaseModel):
+    id: PyObjectId = Field(default_factory=PyObjectId, alias="_id")
+    username: str
+    hashed_password: str
+    comments: List[str] = []
+    ratings: List[str] = []
+    watch_list: List[str] = []
 
     class Config:
-        from_attributes = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
 
-
-class MovieResponse(BaseModel):
-    movie_id: int
-    title: str
-    description: Optional[str] = None
-    author: Optional[str] = None
-    year: int
-    average_rating: Optional[float] = None
-
-    class Config:
-        from_attributes = True
-
-
-class Genre(GenreBase):
-    genre_id: int
-    movies: List[MovieInGenre] = []
-
-    class Config:
-        from_attributes = True
-
-
-class ActorBase(BaseModel):
-    name: str
-    gender: Optional[str] = None
-
-
-class ActorCreate(ActorBase):
-    pass
-
-
-class Actor(ActorBase):
-    actor_id: int
-
-    class Config:
-        from_attributes = True
-
-
-class CommentBase(BaseModel):
-    content: str
-
-
-class CommentCreate(CommentBase):
-    pass
-
-
-class Comment(CommentBase):
-    comment_id: int
-    movie_id: int
-    user_id: int
-
-    class Config:
-        from_attributes = True
-
-
-class RatingBase(BaseModel):
-    rating: int = Field(..., ge=1, le=10)
-    movie_id: int
-
-
-class RatingCreate(RatingBase):
-    pass
-
-
-class RatingResponse(RatingBase):
-    rating_id: int
-    user_id: int
-
-    class Config:
-        from_attributes = True
-
-
-class WatchListBase(BaseModel):
-    user_id: int
-    movie_id: int
-
-
-class WatchListCreate(WatchListBase):
-    pass
-
-
-class WatchListResponse(WatchListBase):
-    class Config:
-        from_attributes = True
+# Similarly, define schemas for Genre, Movie, Actor, Comment, Rating

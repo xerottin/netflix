@@ -1,4 +1,3 @@
-#main.py
 from fastapi import FastAPI, HTTPException, Depends
 from sqlalchemy.orm import Session
 from typing import List
@@ -8,20 +7,19 @@ from app.crud import create_movie, get_movies, get_movie, create_actor, get_acto
     get_genre, create_rating, get_movie_average_rating
 from app.dependencies import get_current_user
 from app.models import User, Movie
-from app.schemas import RatingResponse, RatingCreate, MovieResponse
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
-# auth
-app.include_router(auth.router)
+# Authentication
+app.include_router(auth.router, prefix="/auth", tags=["auth"])
 
-# Добавьте роутер для комментариев
+# Include your router for other endpoints
 app.include_router(router.router)
 
 
-@app.post("/movie/", response_model=schemas.Movie)
+@app.post("/movies/", response_model=schemas.Movie)
 async def create_movie_endpoint(movie: schemas.MovieCreate, db: Session = Depends(get_db)):
     return create_movie(db=db, movie=movie)
 
@@ -39,7 +37,7 @@ def read_movie(movie_id: int, db: Session = Depends(get_db)):
 
     average_rating = get_movie_average_rating(db, movie_id)
     return schemas.MovieResponse(
-        movie_id=db_movie.movie_id,
+        movie_id=db_movie.id,
         title=db_movie.title,
         description=db_movie.description,
         author=db_movie.author,
@@ -84,25 +82,39 @@ def read_genre(genre_id: int, db: Session = Depends(get_db)):
     return db_genre
 
 
-@app.post("/ratings/", response_model=RatingResponse)
+@app.post("/ratings/", response_model=schemas.RatingResponse)
 def create_movie_rating(
-        rating: RatingCreate,
+        rating: schemas.RatingCreate,
         db: Session = Depends(get_db),
         current_user: User = Depends(get_current_user)
 ):
-    db_movie = db.query(Movie).filter(rating.movie_id == Movie.movie_id).first()
+    db_movie = db.query(Movie).filter(rating.movie_id == Movie.id).first()
     if not db_movie:
         raise HTTPException(status_code=404, detail="Movie not found")
 
-    db_rating = create_rating(db, rating, current_user.user_id)
+    db_rating = create_rating(db, rating, current_user.id)
     return db_rating
 
 
-@app.get("/movies/{movie_id}", response_model=MovieResponse)
-def read_movie(movie_id: int, db: Session = Depends(get_db)):
-    db_movie = db.query(Movie).filter(movie_id == Movie.movie_id).first()
-    if not db_movie:
+@app.post("/movies/{movie_id}/comments", response_model=schemas.Comment)
+def add_comment(
+        movie_id: str,
+        comment: schemas.CommentCreate,
+        user: User = Depends(get_current_user),
+        db: Session = Depends(get_db)
+):
+    movie = db.query(Movie).filter(movie_id == Movie.id).first()
+    if not movie:
         raise HTTPException(status_code=404, detail="Movie not found")
 
-    average_rating = get_movie_average_rating(db, movie_id)
-    return MovieResponse(id=db_movie.movie_id, title=db_movie.title, average_rating=average_rating)
+    new_comment = models.Comment(
+        movie_id=movie_id,
+        user_id=user.id,
+        content=comment.content
+    )
+
+    db.add(new_comment)
+    db.commit()
+    db.refresh(new_comment)
+
+    return new_comment

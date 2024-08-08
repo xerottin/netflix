@@ -1,95 +1,52 @@
-# crud.py
-from sqlalchemy.orm import Session
+from bson import ObjectId
+from app.database import genres_collection, movies_collection, actors_collection, ratings_collection, users_collection
+from app.models import Genre, Movie, Actor, Rating
 
-from app import models, schemas
-from app.models import Rating
-from app.schemas import RatingCreate
+async def get_genre(genre_id: str):
+    return await genres_collection.find_one({"_id": ObjectId(genre_id)})
 
+async def get_genres(skip: int = 0, limit: int = 10):
+    genres_cursor = genres_collection.find().skip(skip).limit(limit)
+    return await genres_cursor.to_list(length=limit)
 
-def get_genre(db: Session, genre_id: int):
-    return db.query(models.Genre).filter(genre_id == models.Genre.genre_id).first()
+async def create_genre(genre: Genre):
+    genre_dict = genre.dict()
+    new_genre = await genres_collection.insert_one(genre_dict)
+    created_genre = await genres_collection.find_one({"_id": new_genre.inserted_id})
+    return created_genre
 
+async def get_movie(movie_id: str):
+    return await movies_collection.find_one({"_id": ObjectId(movie_id)})
 
-def get_genres(db: Session, skip: int = 0, limit: int = 10):
-    return db.query(models.Genre).offset(skip).limit(limit).all()
+async def get_movies(skip: int = 0, limit: int = 10):
+    movies_cursor = movies_collection.find().skip(skip).limit(limit)
+    return await movies_cursor.to_list(length=limit)
 
-
-def create_genre(db: Session, genre: schemas.GenreCreate):
-    db_genre = models.Genre(name=genre.name)
-    db.add(db_genre)
-    db.commit()
-    db.refresh(db_genre)
-    return db_genre
-
-
-def get_movie(db: Session, movie_id: int):
-    return db.query(models.Movie).filter(movie_id == models.Movie.movie_id).first()
-
-
-def get_movies(db: Session, skip: int = 0, limit: int = 10):
-    return db.query(models.Movie).offset(skip).limit(limit).all()
-
-
-def create_movie(db: Session, movie: schemas.MovieCreate):
-    db_movie = models.Movie(
-        title=movie.title,
-        description=movie.description,
-        author=movie.author,
-        year=movie.year
-    )
+async def create_movie(movie: Movie):
+    movie_dict = movie.dict()
     if movie.genres:
-        db_movie.genres = db.query(models.Genre).filter(models.Genre.genre_id.in_(movie.genres)).all()
+        movie_dict['genres'] = [ObjectId(genre_id) for genre_id in movie.genres]
     if movie.actors:
-        db_movie.actors = db.query(models.Actor).filter(models.Actor.actor_id.in_(movie.actors)).all()
-    db.add(db_movie)
-    db.commit()
-    db.refresh(db_movie)
-    return db_movie
+        movie_dict['actors'] = [ObjectId(actor_id) for actor_id in movie.actors]
+    new_movie = await movies_collection.insert_one(movie_dict)
+    created_movie = await movies_collection.find_one({"_id": new_movie.inserted_id})
+    return created_movie
 
+async def get_actor(actor_id: str):
+    return await actors_collection.find_one({"_id": ObjectId(actor_id)})
 
-def get_actor(db: Session, actor_id: int):
-    return db.query(models.Actor).filter(actor_id == models.Actor.actor_id).first()
+async def get_actors(skip: int = 0, limit: int = 10):
+    actors_cursor = actors_collection.find().skip(skip).limit(limit)
+    return await actors_cursor.to_list(length=limit)
 
+async def create_actor(actor: Actor):
+    actor_dict = actor.dict()
+    new_actor = await actors_collection.insert_one(actor_dict)
+    created_actor = await actors_collection.find_one({"_id": new_actor.inserted_id})
+    return created_actor
 
-def get_actors(db: Session, skip: int = 0, limit: int = 10):
-    return db.query(models.Actor).offset(skip).limit(limit).all()
-
-
-def create_actor(db: Session, actor: schemas.ActorCreate):
-    db_actor = models.Actor(
-        name=actor.name,
-    )
-    db.add(db_actor)
-    db.commit()
-    db.refresh(db_actor)
-    return db_actor
-
-
-def create_rating(db: Session, rating: RatingCreate, user_id: int):
-    db_rating = Rating(**rating.model_dump(), user_id=user_id)
-    db.add(db_rating)
-    db.commit()
-    db.refresh(db_rating)
-    return db_rating
-
-
-def get_movie_average_rating(db: Session, movie_id: int):
-    ratings = db.query(Rating).filter(movie_id == Rating.movie_id).all()
-    if not ratings:
-        return None
-    total = sum(r.rating for r in ratings)
-    return total / len(ratings)
-
-
-def add_to_watchlist(db: Session, watchlist: schemas.WatchListCreate):
-    db_user = db.query(models.User).filter(watchlist.user_id == models.User.user_id).first()
-    db_movie = db.query(models.Movie).filter(watchlist.movie_id == models.Movie.movie_id).first()
-
-    if not db_user or not db_movie:
-        return None
-
-    db_user.watch_list.append(db_movie)
-    db.commit()
-    db.refresh(db_user)
-
-    return db_user
+async def create_rating(rating: Rating):
+    rating_dict = rating.dict()
+    new_rating = await ratings_collection.insert_one(rating_dict)
+    created_rating = await ratings_collection.find_one({"_id": new_rating.inserted_id})
+    return created_rating
