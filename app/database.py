@@ -1,14 +1,17 @@
-from motor.motor_asyncio import AsyncIOMotorClient
-import os
+#database.py
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from app.config import DATABASE_URL
 
-MONGO_DETAILS = os.getenv("MONGO_DETAILS", "mongodb://localhost:27017")
+engine = create_engine(DATABASE_URL)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+Base = declarative_base()
 
-client = AsyncIOMotorClient(MONGO_DETAILS)
-database = client.movies_db
 
-users_collection = database.get_collection("users")
-movies_collection = database.get_collection("movies")
-genres_collection = database.get_collection("genres")
-actors_collection = database.get_collection("actors")
-comments_collection = database.get_collection("comments")
-ratings_collection = database.get_collection("ratings")
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
