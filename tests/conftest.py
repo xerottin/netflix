@@ -2,7 +2,7 @@
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from app.models import Base, Users
+from app.models import Base, User
 from passlib.context import CryptContext
 
 bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -19,7 +19,7 @@ def db():
     db = TestingSessionLocal()
 
     # Добавляем тестового пользователя
-    test_user = Users(
+    test_user = User(
         username="testuser",
         hashed_password=bcrypt_context.hash("testpassword")
     )
