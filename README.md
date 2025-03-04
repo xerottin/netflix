@@ -11,6 +11,12 @@ Streamify is a backend project designed to provide a seamless video streaming ex
 - **PostgreSQL** - Relational database for structured data.
 - **MongoDB** - NoSQL database for flexible data storage.
 
+## Branches and Databases
+This repository has two branches, each using a different database:
+- **main branch** - Empty.
+- **postgres branch** - Uses PostgreSQL as the primary database.
+- **mongo branch** - Uses MongoDB for flexible and scalable data storage.
+
 ## Running the Project Locally
 
 ### 1. Clone the Repository
@@ -33,5 +39,5 @@ Create a `.env` file and add the required database connection settings for Postg
 ```
 
 ## Conclusion
-Your project is now ready for development and testing! Make sure to configure your databases properly and optimize for production when deploying.
+Project is now ready for development and testing! Make sure to configure your databases properly and optimize for production when deploying.
 
